@@ -4,7 +4,7 @@
 export const STEPS_PER_UNIT = 1000;
 
 // Total units required to travel from start to finish.
-export const TOTAL_UNITS = 7500;
+export const TOTAL_UNITS = 30000;
 
 // Convenience: total steps required to finish the journey.
 export const TOTAL_STEPS = STEPS_PER_UNIT * TOTAL_UNITS;
