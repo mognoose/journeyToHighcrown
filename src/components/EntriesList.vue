@@ -1,10 +1,30 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { useJourneyStore } from '../stores/journey';
 
 const { state, removeEntry, clearAll } = useJourneyStore();
 
+const DELETE_WINDOW_MS = 10 * 60 * 1000;
+
+const now = ref(Date.now());
+let timer: ReturnType<typeof setInterval> | undefined;
+
+onMounted(() => {
+  timer = setInterval(() => {
+    now.value = Date.now();
+  }, 1000);
+});
+
+onBeforeUnmount(() => {
+  if (timer) clearInterval(timer);
+});
+
 function formatDate(ts: number): string {
   return new Date(ts).toLocaleString();
+}
+
+function canDelete(createdAt: number): boolean {
+  return now.value - createdAt < DELETE_WINDOW_MS;
 }
 
 async function confirmClear() {
@@ -40,6 +60,7 @@ async function confirmClear() {
           {{ entry.steps.toLocaleString() }} steps
         </div>
         <button
+          v-if="canDelete(entry.createdAt)"
           class="remove"
           type="button"
           @click="removeEntry(entry.id)"
@@ -71,6 +92,7 @@ h3 {
   color: #ffd76b;
 }
 .clear {
+  display: none;
   background: transparent;
   color: #ff8a8a;
   border: 1px solid #553;
