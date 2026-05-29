@@ -1,6 +1,23 @@
 // Persistence service abstraction.
-// Today: localStorage. Tomorrow: swap implementation for Firestore / your API
-// without touching the rest of the app.
+// Two implementations are provided:
+//  - `localStepService`  → browser localStorage (offline / dev fallback)
+//  - `firestoreStepService` → Firebase Firestore (shared across devices)
+// The exported `stepService` is selected via the VITE_STEP_BACKEND env var
+// ("firebase" by default, "local" to force localStorage).
+
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  writeBatch,
+  Timestamp,
+} from 'firebase/firestore';
+import { getDb } from './firebase';
 
 export interface StepEntry {
   id: string;
@@ -61,5 +78,58 @@ export const localStepService: StepService = {
   },
 };
 
+const COLLECTION = 'stepEntries';
+
+export const firestoreStepService: StepService = {
+  async load() {
+    const db = getDb();
+    const q = query(collection(db, COLLECTION), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => {
+      const data = d.data() as {
+        contributor?: string;
+        steps?: number;
+        createdAt?: Timestamp | null;
+      };
+      return {
+        id: d.id,
+        contributor: data.contributor ?? 'Anonymous',
+        steps: Number(data.steps ?? 0),
+        // `serverTimestamp()` is null for an instant after write; fall back to now.
+        createdAt: data.createdAt ? data.createdAt.toMillis() : Date.now(),
+      } satisfies StepEntry;
+    });
+  },
+  async add({ contributor, steps }) {
+    const db = getDb();
+    const payload = {
+      contributor: contributor.trim() || 'Anonymous',
+      steps: Math.max(0, Math.floor(steps)),
+      createdAt: serverTimestamp(),
+    };
+    const ref = await addDoc(collection(db, COLLECTION), payload);
+    return {
+      id: ref.id,
+      contributor: payload.contributor,
+      steps: payload.steps,
+      createdAt: Date.now(),
+    };
+  },
+  async remove(id) {
+    const db = getDb();
+    await deleteDoc(doc(db, COLLECTION, id));
+  },
+  async clear() {
+    const db = getDb();
+    const snap = await getDocs(collection(db, COLLECTION));
+    if (snap.empty) return;
+    const batch = writeBatch(db);
+    snap.docs.forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+  },
+};
+
 // Single export point so callers don't care about the implementation.
-export const stepService: StepService = localStepService;
+const backend = (import.meta.env.VITE_STEP_BACKEND ?? 'firebase').toLowerCase();
+export const stepService: StepService =
+  backend === 'local' ? localStepService : firestoreStepService;
