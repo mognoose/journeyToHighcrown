@@ -39,6 +39,7 @@ onMounted(() => {
 
 .app {
   font-family: 'Almendra', serif;
+  font-size: 24px;
   max-width: 1100px;
   margin: 0 auto;
   padding: 24px 16px 48px;
