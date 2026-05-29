@@ -35,7 +35,10 @@ onMounted(() => {
 </template>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Almendra&display=swap');
+
 .app {
+  font-family: 'Almendra', serif;
   max-width: 1100px;
   margin: 0 auto;
   padding: 24px 16px 48px;
