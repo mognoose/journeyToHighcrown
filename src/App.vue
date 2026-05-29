@@ -34,7 +34,7 @@ onMounted(() => {
   </main>
 </template>
 
-<style scoped>
+<style>
 .app {
   max-width: 1100px;
   margin: 0 auto;
@@ -67,5 +67,9 @@ onMounted(() => {
   .grid {
     grid-template-columns: 1fr;
   }
+}
+
+.milestone-content {
+  color: rgb(177, 155, 95);
 }
 </style>

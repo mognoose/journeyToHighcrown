@@ -18,6 +18,7 @@ export interface Waypoint {
   x: number; // percent from left
   y: number; // percent from top
   milestone: boolean; // whether to show a milestone marker at this waypoint
+  description?: string; // shown in the milestone modal (only used when milestone === true)
 }
 
 export const WAYPOINTS: Waypoint[] = [

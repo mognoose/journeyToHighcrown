@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { computed, ref, watch, onBeforeUnmount } from 'vue';
 import { useJourneyStore } from '../stores/journey';
-import { WAYPOINTS } from '../config';
+import { WAYPOINTS, type Waypoint } from '../config';
 import mapImg from '../assets/images/JourneyToHighCrown.png';
 import tokenImg from '../assets/images/HiQToken.png';
 import adventurersImg from '../assets/images/HiQAdventurers.png';
 import TheLore from './TheLore.vue';
+import { milestoneComponents } from './milestones';
 const { tokenPosition, progress } = useJourneyStore();
+
+const milestones = computed(() => WAYPOINTS.filter((w) => w.milestone));
+
+const selectedMilestoneComponent = computed(
+  () => (selectedMilestone.value ? milestoneComponents[selectedMilestone.value.name] : null),
+);
 
 const pathD = computed(() => {
   if (WAYPOINTS.length < 2) return '';
@@ -26,10 +33,15 @@ const showLore = ref(false);
 const openLore = () => { showLore.value = true; };
 const closeLore = () => { showLore.value = false; };
 
+const selectedMilestone = ref<Waypoint | null>(null);
+const openMilestone = (w: Waypoint) => { selectedMilestone.value = w; };
+const closeMilestone = () => { selectedMilestone.value = null; };
+
 const onKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
     closeAdventurers();
     closeLore();
+    closeMilestone();
   }
 };
 watch(showAdventurers, (open) => {
@@ -46,17 +58,19 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
     <!-- Path overlay drawn in the map's % coordinate space -->
     <svg class="path-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
       <path :d="pathD" class="path-stroke" />
-      <g>
-        <circle
-          v-for="(w, i) in WAYPOINTS.filter((w) => w.milestone)"
-          :key="w.name + i"
-          :cx="w.x"
-          :cy="w.y"
-          r="0.8"
-          class="waypoint"
-        />
-      </g>
     </svg>
+
+    <!-- Milestone buttons -->
+    <button
+      v-for="(w, i) in milestones"
+      :key="w.name + i"
+      type="button"
+      class="milestone-btn"
+      :style="{ left: w.x + '%', top: w.y + '%' }"
+      :aria-label="`Open milestone: ${w.name}`"
+      :title="w.name"
+      @click="openMilestone(w)"
+    />
 
     <!-- Token -->
     <button
@@ -111,6 +125,29 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
       </div>
     </div>
 
+    <div
+      v-if="selectedMilestone"
+      class="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="selectedMilestone.name"
+      @click.self="closeMilestone"
+    >
+      <div class="modal-content">
+        <button
+          type="button"
+          class="modal-close"
+          aria-label="Close"
+          @click="closeMilestone"
+        >×</button>
+        <div class="modal-body">
+          <h2 class="milestone-title">{{ selectedMilestone.name }}</h2>
+          <component :is="selectedMilestoneComponent" v-if="selectedMilestoneComponent" />
+          <p v-else class="milestone-empty">No tale has been written for this place yet.</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Progress label -->
     <div class="overlay-info progress">
       <strong>{{ Math.round(progress * 100) }}%</strong>
@@ -161,6 +198,40 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
   fill: #ffd76b;
   stroke: #1a1a1a;
   stroke-width: 0.15;
+}
+
+.milestone-btn {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid #1a1a1a;
+  background: #ffd76b;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.milestone-btn:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+  box-shadow: 0 0 10px rgba(255, 215, 107, 0.9);
+}
+
+.milestone-btn:focus-visible {
+  outline: 2px solid #ffd76b;
+  outline-offset: 3px;
+}
+
+.milestone-title {
+  margin: 0 0 10px;
+  color: #ffd76b;
+}
+
+.milestone-empty {
+  color: #888;
+  font-style: italic;
 }
 
 .token-btn {
