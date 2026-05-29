@@ -5,7 +5,7 @@ import { WAYPOINTS } from '../config';
 import mapImg from '../assets/images/JourneyToHighCrown.png';
 import tokenImg from '../assets/images/HiQToken.png';
 import adventurersImg from '../assets/images/HiQAdventurers.png';
-
+import TheLore from './TheLore.vue';
 const { tokenPosition, progress } = useJourneyStore();
 
 const pathD = computed(() => {
@@ -22,8 +22,15 @@ const showAdventurers = ref(false);
 const openAdventurers = () => { showAdventurers.value = true; };
 const closeAdventurers = () => { showAdventurers.value = false; };
 
+const showLore = ref(false);
+const openLore = () => { showLore.value = true; };
+const closeLore = () => { showLore.value = false; };
+
 const onKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') closeAdventurers();
+  if (e.key === 'Escape') {
+    closeAdventurers();
+    closeLore();
+  }
 };
 watch(showAdventurers, (open) => {
   if (open) window.addEventListener('keydown', onKeydown);
@@ -78,14 +85,39 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
           aria-label="Close"
           @click="closeAdventurers"
         >×</button>
-        <img :src="adventurersImg" alt="Adventurers" class="modal-img" />
+        <div class="modal-body">
+          <img :src="adventurersImg" alt="Adventurers" class="modal-img" />
+        </div>
+      </div>
+    </div>
+    <div
+      v-if="showLore"
+      class="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Lore"
+      @click.self="closeLore"
+    >
+      <div class="modal-content">
+        <button
+          type="button"
+          class="modal-close"
+          aria-label="Close"
+          @click="closeLore"
+        >×</button>
+        <div class="modal-body">
+          <TheLore />
+        </div>
       </div>
     </div>
 
     <!-- Progress label -->
-    <div class="overlay-info">
+    <div class="overlay-info progress">
       <strong>{{ Math.round(progress * 100) }}%</strong>
       <span>{{ tokenPosition.name }}</span>
+    </div>
+    <div class="overlay-info lore" @click="openLore">
+      <span>Lore</span>
     </div>
   </div>
 </template>
@@ -182,8 +214,16 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
   background: #111;
   border: 1px solid #2a2a2a;
   border-radius: 8px;
-  padding: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .modal-img {
@@ -229,5 +269,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
   display: flex;
   gap: 10px;
   align-items: center;
+
+  &.lore {
+    top: 10px;
+    right: 10px;
+    left: auto;
+    bottom: auto;
+    cursor: pointer;
+  }
 }
 </style>
