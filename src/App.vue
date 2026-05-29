@@ -51,6 +51,7 @@ onMounted(() => {
   font-size: 28px;
   color: #ffd76b;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 .app-header p {
   margin: 4px 0 0;
