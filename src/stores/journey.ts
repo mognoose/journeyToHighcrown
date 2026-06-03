@@ -45,6 +45,32 @@ const totalSteps = computed(() =>
   state.entries.reduce((sum, e) => sum + e.steps, 0)
 );
 
+const contributorCount = computed(() => {
+  const names = new Set<string>();
+  for (const e of state.entries) {
+    const name = e.contributor?.trim().toLowerCase();
+    if (name) names.add(name);
+  }
+  return names.size;
+});
+
+const topContributor = computed<{ name: string; steps: number } | null>(() => {
+  const totals = new Map<string, { name: string; steps: number }>();
+  for (const e of state.entries) {
+    const raw = e.contributor?.trim();
+    if (!raw) continue;
+    const key = raw.toLowerCase();
+    const existing = totals.get(key);
+    if (existing) existing.steps += e.steps;
+    else totals.set(key, { name: raw, steps: e.steps });
+  }
+  let top: { name: string; steps: number } | null = null;
+  for (const entry of totals.values()) {
+    if (!top || entry.steps > top.steps) top = entry;
+  }
+  return top;
+});
+
 const totalUnits = computed(() => totalSteps.value / STEPS_PER_UNIT);
 
 const progress = computed(() =>
@@ -122,6 +148,8 @@ export function useJourneyStore() {
     progress,
     tokenPosition,
     nextWaypoint,
+    contributorCount,
+    topContributor,
     init,
     addSteps,
     removeEntry,

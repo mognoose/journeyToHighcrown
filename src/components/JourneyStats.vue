@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { useJourneyStore } from '../stores/journey';
 import { STEPS_PER_UNIT, TOTAL_STEPS, TOTAL_UNITS } from '../config';
 
-const { totalSteps, totalUnits, progress, nextWaypoint } = useJourneyStore();
+const { totalSteps, totalUnits, progress, nextWaypoint, contributorCount, topContributor } = useJourneyStore();
 
 const remaining = computed(() => Math.max(0, TOTAL_STEPS - totalSteps.value));
 </script>
@@ -27,6 +27,19 @@ const remaining = computed(() => Math.max(0, TOTAL_STEPS - totalSteps.value));
     <div class="stat">
       <span class="label">Steps to go</span>
       <span class="value">{{ remaining.toLocaleString() }}</span>
+    </div>
+    <div class="stat">
+      <span class="label">Individual contributors</span>
+      <span class="value">{{ contributorCount }}</span>
+    </div>
+    <div class="stat">
+      <span class="label">Top contributor</span>
+      <span class="value">
+        <template v-if="topContributor">
+          {{ topContributor.name }} ({{ topContributor.steps.toLocaleString() }})
+        </template>
+        <template v-else>—</template>
+      </span>
     </div>
     <div class="stat">
       <span class="label">Next waypoint</span>
