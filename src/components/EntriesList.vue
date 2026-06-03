@@ -20,7 +20,10 @@ onBeforeUnmount(() => {
 });
 
 function formatDate(ts: number): string {
-  return new Date(ts).toLocaleString();
+  return new Date(ts).toLocaleString('fi-FI', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  });
 }
 
 function canDelete(createdAt: number): boolean {
