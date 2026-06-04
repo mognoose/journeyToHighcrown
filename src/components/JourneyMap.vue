@@ -236,19 +236,27 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
 .token-btn {
   position: absolute;
-  width: 200px;
   min-width: 36px;
   max-width: 102px;
   transform: translate(-50%, -75%);
   transition: left 600ms ease, top 600ms ease, transform 150ms ease;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6));
   border: 3px solid rgba(215, 178, 14, 0.9);
-  box-shadow: 0 0 8px rgba(125, 115, 207, 0.7);
+  box-shadow: 0 0 8px rgba(215, 178, 14, 0.7);
   border-radius: 50%;
   padding: 10px;
-  background: transparent;
+  background: rgba(215, 178, 14, 0.15);
   cursor: pointer;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  img {
+    width: 150%;
+    margin: 0 auto;
+    height: auto;
+    display: block;
+  }
 }
 
 .token-btn:hover {
